@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "example_package_YOUR_USERNAME_HERE"
+name = "QuakeScraper_snufomechanic"
 version = "0.0.1"
-authors = [{ name = "Example Author", email = "author@example.com" }]
-description = "A small example package"
+authors = [{ name = "snufomechanic", email = "anil.oz@icloud.com" }]
+description = "A Python package for scraping earthquake data from Kandilli Observatory and Earthquake Research Institute (KOERI) and extracting useful information."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
