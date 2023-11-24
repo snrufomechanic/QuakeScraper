@@ -17,7 +17,7 @@ pip install QuakeScraper
 ```python
 # Example usage of the earthquake scraper
 
-from earthquake_scraper import fetch_earthquake_data
+from QuakeScraper_snrufomechanic.earthquake_scraper import fetch_earthquake_data
 
 # Define your query parameters
 
