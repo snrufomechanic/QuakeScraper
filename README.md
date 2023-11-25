@@ -2,7 +2,7 @@
 
 ## A Python package for scraping earthquake data from [Kandilli Observatory and Earthquake Research Institute (KOERI)](http://www.koeri.boun.edu.tr/) and extracting useful information.
 
-# -Installation
+# Installation
 
 ---
 
@@ -17,7 +17,7 @@ pip install QuakeScraper
 ```python
 # Example usage of the earthquake scraper
 
-from QuakeScraper_snrufomechanic.earthquake_scraper import fetch_earthquake_data
+from QuakeScraper import fetch_earthquake_data
 
 # Define your query parameters
 
