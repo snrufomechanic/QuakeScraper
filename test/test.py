@@ -1,4 +1,4 @@
-from earthquake_scraper import fetch_earthquake_data
+from QuakeScraper import fetch_earthquake_data
 
 
 
