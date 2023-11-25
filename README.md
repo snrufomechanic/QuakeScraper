@@ -40,9 +40,22 @@ print(earthquake_df.head())
 ---
 
 <h1> Parameters </h1>
-- start_year, start_month, start_day: Start date of the query period. <br>
-- end_year, end_month, end_day: End date of the query period. <br>
-- Other optional parameters for specifying the geographical area, earthquake  magnitude, depth, and output type.
+- `start_year`, `start_month`, `start_day`: Start date of the query period. <br>
+- `end_year`, `end_month`, `end_day`: End date of the query period. <br>
+
+# Optional parameters for fetch_earthquake_data():
+
+| Parameter       | Default Value |
+| --------------- | ------------- |
+| `min_latitude`  | 35.00         |
+| `max_latitude`  | 42.00         |
+| `min_longitude` | 26.00         |
+| `max_longitude` | 45.00         |
+| `min_magnitude` | 3.5           |
+| `max_magnitude` | 9.0           |
+| `min_depth`     | 0             |
+| `max_depth`     | 500           |
+| `output_type`   | 'DF'          |
 
 ---
 
