@@ -1,3 +1,5 @@
+# -_- coding:utf-8 -_-
+
 # QuakeScraper
 
 ## Bu Python paketi [T.C. İçişleri Bakanlığı Afet ve Acil Durum Yönetimi Başkanlığı (AFAD)](www.afad.gov.tr) resmi web sitesi üzerinden verilen parametrelere göre istenilen verileri çeker.

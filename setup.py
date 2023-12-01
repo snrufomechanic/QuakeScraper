@@ -6,12 +6,25 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='QuakeScraper',
-    version='0.0.4',
+    version='0.1.1',
     packages=find_packages(),
     install_requires=[
-        'requests',
         'beautifulsoup4',
+        'branca',
+        'certifi',
+        'charset-normalizer',
+        'folium',
+        'idna',
+        'Jinja2',
+        'MarkupSafe',
+        'numpy',
         'pandas',
+        'python-dateutil',
+        'pytz',
+        'requests',
+        'six',
+        'urllib3',
+        'tzdata'
     ],
     long_description=long_description,
     long_description_content_type='text/markdown'
