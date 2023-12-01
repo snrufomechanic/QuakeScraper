@@ -1,104 +1,155 @@
+import time
+
 import requests
-from bs4 import BeautifulSoup
-from datetime import datetime
+import json
+import os
 import pandas as pd
-import io
-
-from .utils import download_file, generate_ofname_parameter
-
-
+import folium
+from folium import Popup, Html
+from folium.plugins import MarkerCluster, FloatImage
 
 
 def fetch_earthquake_data(start_year, start_month, start_day, end_year, end_month, end_day,
                           min_latitude=35.00, max_latitude=42.00, min_longitude=26.00, max_longitude=45.00,
                           min_magnitude=3.5, max_magnitude=9.0, min_depth=0, max_depth=500, output_type='DF'):
-    """
-    Fetch earthquake data from the specified source.
+    print(
+        "\nBu paket ile alacağınız her türlü veriyi, haritayı ve bilgiyi Telif Hakları Yasası gereğince... \nT.C. "
+        "İçişleri Bakanlığı Afet ve Acil Durum Yönetimi Başkanlığı Deprem Dairesi Başkanlığı'nı kaynak göstererek "
+        "kullanmanız gerekmektedir.")
+    print("\n\nŞartları kabul ediyorsanız devam etmek için E, Çıkış için H komutu kullanabilirsiniz.")
+    user_input = input("Devam Etmek istiyor musunuz? (e/H): ")
+    if user_input.lower() == 'e':
+        print("Veri alınıyor.")
+        base_url = "https://deprem.afad.gov.tr/EventData/GetEventsByFilter"
 
-    Parameters:
-    - start_year (str): The start year of the query period.
-    - start_month (str): The start month of the query period.
-    - start_day (str): The start day of the query period.
-    - end_year (str): The end year of the query period.
-    - end_month (str): The end month of the query period.
-    - end_day (str): The end day of the query period.
-    - min_latitude (float): The minimum latitude of the geographical area.
-    - max_latitude (float): The maximum latitude of the geographical area.
-    - min_longitude (float): The minimum longitude of the geographical area.
-    - max_longitude (float): The maximum longitude of the geographical area.
-    - min_magnitude (float): The minimum earthquake magnitude.
-    - max_magnitude (float): The maximum earthquake magnitude.
-    - min_depth (int): The minimum earthquake depth.
-    - max_depth (int): The maximum earthquake depth.
-    - output_type (str): The output type of the data. Can be 'DF' (default) or 'TXT' or 'CSV'.
+        headers = {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7,pt;q=0.6",
+            "cache-control": "no-cache, no-store, must-revalidate",
+            "content-type": "application/json",
+            "sec-ch-ua": "\"Google Chrome\";v=\"119\", \"Chromium\";v=\"119\", \"Not?A_Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "strict-transport-security": "max-age=16070400; includeSubDomains",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "deny",
+            "x-xss-protectio": "1; mode=block",
+            "credentials": "include"
+        }
 
-    Returns:
-    - DataFrame or str: The earthquake data as a DataFrame or text content.
-    """
+        payload = {
+            "EventSearchFilterList": [
+                {"FilterType": 1, "Value": str(min_latitude)},
+                {"FilterType": 2, "Value": str(max_latitude)},
+                {"FilterType": 3, "Value": str(min_longitude)},
+                {"FilterType": 4, "Value": str(max_longitude)},
+                {"FilterType": 7, "Value": str(max_depth)},
+                {"FilterType": 11, "Value": str(min_magnitude)},
+                {"FilterType": 12, "Value": str(max_magnitude)},
+                {"FilterType": 8, "Value": f"{start_year}-{start_month}-{start_day}T00:00:00.000Z"},
+                {"FilterType": 9, "Value": f"{end_year}-{end_month}-{end_day}T23:59:59.999Z"}
+            ],
+            "Skip": 0,
+            "take": 999999,
+            "SortDescriptor": {"field": "eventDate", "dir": "desc"}
+        }
 
-    base_url = "http://www.koeri.boun.edu.tr/sismo/zeqdb/submitRecSearchT.asp"
-
-    url_params = {
-        "bYear": start_year,
-        "bMont": start_month,
-        "bDay": start_day,
-        "eYear": end_year,
-        "eMont": end_month,
-        "eDay": end_day,
-        "EnMin": min_latitude,
-        "EnMax": max_latitude,
-        "BoyMin": min_longitude,
-        "BoyMax": max_longitude,
-        "MAGMin": min_magnitude,
-        "MAGMax": max_magnitude,
-        "DerMin": min_depth,
-        "DerMax": max_depth,
-        "Tip": "Deprem",
-        "ofName": generate_ofname_parameter(start_year, start_month, start_day, end_year, end_month, end_day,
-                                            min_magnitude, max_magnitude),
-    }
-
-    headers = {
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
-                  "application/signed-exchange;v=b3;q=0.7",
-        "accept-language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7,pt;q=0.6",
-        "upgrade-insecure-requests": "1"
-    }
-
-    response = requests.get(base_url, params=url_params, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Find name holder textbox by id. id = boxFNAMEphs
-    file_name = soup.find(id='boxFNAME').get('value')
-    if file_name is None:
-        raise Exception("File name holder not found.")
-    else:
-        raw_data_txt = download_file(file_name)
+        response = requests.post(base_url, headers=headers, data=json.dumps(payload))
+        result = response.json()
 
         if output_type == 'DF':
-            # Parse the raw data into a DataFrame
-            dataframe = pd.read_csv(io.StringIO(raw_data_txt), delimiter="\t")
-            return dataframe
+            # Assuming result is a list of dictionaries, you may need to adjust this based on the actual structure
+            dataframe = pd.DataFrame(result)
+            return event_list_parser(dataframe)
 
         elif output_type == 'TXT':
+            # Assuming you want to save the JSON response as text
             try:
+                os.makedirs(os.path.join(os.getcwd(), 'output/TXT'), exist_ok=True)
 
-                output_path = f"./output/TXT/{file_name}"
+                output_path = os.path.join(os.getcwd(),
+                                           f"output/TXT/{start_year}-{start_month}-{start_day}-{end_year}-{end_month}-{end_day}-{min_magnitude}-{max_magnitude}.txt")
                 with open(output_path, 'w') as txt_file:
-                    txt_file.write(raw_data_txt)
-                print(f'Data Successfully saved to text file. path:"./output/TXT/{file_name} "')
+                    json.dump(result, txt_file)
+                print(f'Data Successfully saved to text file. path:"{output_path}"')
                 return True
 
             except Exception as e:
-
                 print(f"Error saving to text file: {e}")
-                return False  # Failed to save to text file
+                return False
 
         elif output_type == 'CSV':
-            # Convert the raw data to CSV format and save ./output/CSV/{filename} folder.
-            raise ValueError("BURASI YAPILIR Bİ ARA^^.")
+            # Convert the JSON response to a DataFrame and save as CSV
+            try:
+                os.makedirs(os.path.join(os.getcwd(), 'output/CSV'), exist_ok=True)
+                output_path = os.path.join(os.getcwd(),
+                                           f'output/CSV/{start_year}-{start_month}-{start_day}-{end_year}-{end_month}-{end_day}-{min_magnitude}-{max_magnitude}.csv')
+                dataframe = pd.DataFrame(result)
+                dataframe.to_csv(output_path, index=False)
+                print(f'Data Successfully saved to CSV file. path:"{output_path}"')
+                return True
+            except Exception as e:
+                print(f"Error saving to CSV file: {e}")
+                return False
 
         else:
             raise ValueError("Invalid output type. Must be 'DF', 'TXT', or 'CSV'.")
+    else:
+        print("Kulllanım şartlarını kabul etmediniz. Çıkış yapılıyor.")
+        for sec in range(0, 6):
+            time.sleep(1)
+
+        exit()
 
 
+def event_list_parser(dataframe):
+    return pd.json_normalize(dataframe['eventList'])
+
+
+def create_map_image(parsed_event_list):
+    """
+    Create a Folium map with CircleMarkers for earthquake events.
+
+    Parameters:
+    - parsed_event_list (pd.DataFrame): DataFrame containing earthquake event data.
+
+    Returns:
+    - folium.Map: The generated Folium map.
+    """
+    print("Harita oluşturuluyor.")
+    # Create a base map
+
+    earthquake_map = folium.Map(location=[parsed_event_list['latitude'].mean(), parsed_event_list['longitude'].mean()],
+                                zoom_start=5, control_scale=True)
+    url = "https://www.afad.gov.tr/kurumlar/afad.gov.tr/Kurumsal-Kimlik/Logolar/PNG/AFAD-_-Icisleri-Bkn.png"
+    logo = FloatImage(image=url, bottom=1, left=1, width='25%')
+    logo.add_to(earthquake_map)
+
+    # Create a MarkerCluster layer for better performance
+    marker_cluster = MarkerCluster().add_to(earthquake_map)
+
+    # Add markers to the map
+    for index, row in parsed_event_list.iterrows():
+        popup_html = Html(f'<table><thead><thead><tbody></tbody></table><a href="https://deprem.afad.gov.tr/event-detail/{row["id"]}">Detaylar</a>', script=True)
+        popup = Popup(popup_html, max_width=300)
+        folium.CircleMarker(
+            location=[row['latitude'], row['longitude']],
+            radius=row['magnitude'] * 2,  # Adjust the multiplier as needed
+            color='red' if row['magnitude'] > 5.5 else ('yellow' if row['magnitude'] > 3.5 else 'green'),
+            fill=True,
+            fill_color='red' if row['magnitude'] > 5.5 else ('yellow' if row['magnitude'] > 3.5 else 'green'),
+            fill_opacity=0.6,
+            tooltip=f"{row['magnitude']}",
+            popup=popup
+        ).add_to(marker_cluster)
+
+    # Save the map as an HTML file
+    output_dir = 'output/'
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = 'output/map.html'
+    earthquake_map.save(output_path)
+    print(f'Map successfully saved. Path: "{output_path}"')
+    return earthquake_map

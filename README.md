@@ -1,8 +1,8 @@
-# Earthquake Scraper
+# QuakeScraper
 
-## A Python package for scraping earthquake data from [Kandilli Observatory and Earthquake Research Institute (KOERI)](http://www.koeri.boun.edu.tr/) and extracting useful information.
+## Bu Python paketi [T.C. İçişleri Bakanlığı Afet ve Acil Durum Yönetimi Başkanlığı (AFAD)](www.afad.gov.tr) resmi web sitesi üzerinden verilen parametrelere göre istenilen verileri çeker.
 
-# Installation
+# Kurulum
 
 ---
 
@@ -12,14 +12,12 @@ pip install QuakeScraper
 
 ---
 
-## <h1> Usage </h1>
+## Kullanım
 
 ```python
-# Example usage of the earthquake scraper
+from QuakeScraper import fetch_earthquake_data, create_map_image
 
-from QuakeScraper import fetch_earthquake_data
-
-# Define your query parameters
+# Sorgu parametrelerinizi tanımlayın
 
 start_year = "2023"
 start_month = "01"
@@ -28,38 +26,45 @@ end_year = "2023"
 end_month = "12"
 end_day = "31"
 
-# Fetch earthquake data and save as a DataFrame
+# Deprem verilerini çekin ve bir DataFrame olarak kaydedin
 
 earthquake_df = fetch_earthquake_data(start_year, start_month, start_day, end_year, end_month, end_day, output_type='DF')
 
-# Display the DataFrame
+# DataFrame'i konsolda görüntüleyin
 
 print(earthquake_df.head())
+
+# Harita üzerinde görüntüleyin
+
+create_map_image(earthquake_df)
 ```
 
 ---
 
-<h1> Parameters </h1>
-- `start_year`, `start_month`, `start_day`: Start date of the query period. <br>
-- `end_year`, `end_month`, `end_day`: End date of the query period. <br>
+<h1> Parametreler  </h1>
+- `start_year`, `start_month`, `start_day`: Sorgu döneminin başlangıç tarihi. <br>
+- `end_year`, `end_month`, `end_day`: Sorgu döneminin bitiş tarihi. <br>
 
-# Optional parameters for fetch_earthquake_data():
+# fetch_earthquake_data() İçin İsteğe Bağlı Parametreler:
 
-| Parameter       | Default Value |
-| --------------- | ------------- |
-| `min_latitude`  | 35.00         |
-| `max_latitude`  | 42.00         |
-| `min_longitude` | 26.00         |
-| `max_longitude` | 45.00         |
-| `min_magnitude` | 3.5           |
-| `max_magnitude` | 9.0           |
-| `min_depth`     | 0             |
-| `max_depth`     | 500           |
-| `output_type`   | 'DF'          |
+<center>
 
----
+| Parametre       | Varsayılan Değer |
+| --------------- | ---------------- |
+| `min_latitude`  | 35.00            |
+| `max_latitude`  | 42.00            |
+| `min_longitude` | 26.00            |
+| `max_longitude` | 45.00            |
+| `min_magnitude` | 3.5              |
+| `max_magnitude` | 9.0              |
+| `min_depth`     | 0                |
+| `max_depth`     | 500              |
+| `output_type`   | 'DF'             |
 
-<h1> Output Types </h1>
-DF: Returns the earthquake data as a DataFrame.
-TXT: Saves the raw data to a text file.
-CSV: Converts the raw data to CSV format and saves it to a file.
+</center>
+
+| Çıktı Türleri | :                                                              |
+| ------------- | -------------------------------------------------------------- |
+| DF:           | Deprem verilerini bir DataFrame olarak döndürür.               |
+| TXT:          | Ham verileri bir metin dosyasına kaydeder.                     |
+| CSV:          | Ham verileri CSV formatına dönüştürür ve bir dosyaya kaydeder. |
